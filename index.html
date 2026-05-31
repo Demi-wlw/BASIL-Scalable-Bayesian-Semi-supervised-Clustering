@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BASIL: Scalable Bayesian Semi-supervised Clustering</title>
+  <meta name="description" content="BASIL is a scalable Bayesian semi-supervised clustering framework with feature selection and adaptive constraint weighting. Published at ICML 2026.">
+  <meta name="author" content="Luwei Wang, Dagmara Panas, Ke Wang, Bruce Guthrie, Sohan Seth">
+
+  <meta property="og:title" content="BASIL: Scalable Bayesian Semi-supervised Clustering">
+  <meta property="og:description" content="Scalable Bayesian semi-supervised clustering with feature selection and adaptive constraint weighting (ICML 2026).">
+  <meta property="og:image" content="assets/images/results/CPRD_bubbles.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <script src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js" defer></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" defer></script>
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/explorer.js" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "BASIL: Scalable Bayesian Semi-supervised Clustering with Feature Selection and Adaptive Constraint Weighting",
+    "author": [
+      {"@type": "Person", "name": "Luwei Wang", "affiliation": "University of Edinburgh"},
+      {"@type": "Person", "name": "Dagmara Panas", "affiliation": "University of Edinburgh"},
+      {"@type": "Person", "name": "Ke Wang", "affiliation": "University of Edinburgh"},
+      {"@type": "Person", "name": "Bruce Guthrie", "affiliation": "University of Edinburgh"},
+      {"@type": "Person", "name": "Sohan Seth", "affiliation": "University of Edinburgh"}
+    ],
+    "datePublished": "2026",
+    "publisher": "PMLR"
+  }
+  </script>
+</head>
+<body>
+
+<!-- 4.1 Hero -->
+<header class="hero is-light">
+  <div class="hero-body">
+    <div class="container has-text-centered">
+      <p class="conference-badge">ICML 2026</p>
+      <h1 class="title is-2 paper-title">
+        BASIL: Scalable Bayesian Semi-supervised Clustering<br>
+        <span class="subtitle-title">with Feature Selection and Adaptive Constraint Weighting</span>
+      </h1>
+      <p class="authors">
+        <a href="mailto:luwei.wang@ed.ac.uk">Luwei Wang</a><sup>1</sup>,
+        Dagmara Panas<sup>1</sup>,
+        Ke Wang<sup>1</sup>,
+        Bruce Guthrie<sup>2</sup>,
+        Sohan Seth<sup>1</sup>
+      </p>
+      <p class="affiliations">
+        <sup>1</sup>School of Informatics, University of Edinburgh &nbsp;&nbsp;
+        <sup>2</sup>Usher Institute, University of Edinburgh
+      </p>
+      <div class="action-buttons">
+        <a class="button is-dark" href="assets/pdf/BASIL_ICML2026.pdf">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
+        </a>
+        <a class="button is-dark" href="https://github.com/Demi-wlw/BASIL-Scalable-Bayesian-Semi-supervised-Clustering">
+          <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
+        </a>
+        <a class="button is-dark" href="#" id="slides-link">
+          <span class="icon"><i class="fas fa-images"></i></span><span>Slides</span>
+        </a>
+        <a class="button is-dark" href="#citation">
+          <span class="icon"><i class="fas fa-quote-right"></i></span><span>BibTeX</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 4.2 MNIST feature-importance demo -->
+<section class="section" id="demo">
+  <div class="container">
+    <figure class="mnist-demo">
+      <div class="mnist-grid" role="img"
+           aria-label="Ten BASIL-learned feature importance maps for MNIST digits 0 through 9, each showing the digit silhouette in red where importance is high.">
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_0_demo.png" alt="Feature importance map for digit 0, with the round outline highlighted.">
+          <span class="digit-label">0</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_1_demo.png" alt="Feature importance map for digit 1, with a narrow vertical stroke highlighted.">
+          <span class="digit-label">1</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_2_demo.png" alt="Feature importance map for digit 2.">
+          <span class="digit-label">2</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_3_demo.png" alt="Feature importance map for digit 3.">
+          <span class="digit-label">3</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_4_demo.png" alt="Feature importance map for digit 4.">
+          <span class="digit-label">4</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_5_demo.png" alt="Feature importance map for digit 5.">
+          <span class="digit-label">5</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_6_demo.png" alt="Feature importance map for digit 6.">
+          <span class="digit-label">6</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_7_demo.png" alt="Feature importance map for digit 7.">
+          <span class="digit-label">7</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_8_demo.png" alt="Feature importance map for digit 8.">
+          <span class="digit-label">8</span>
+        </div>
+        <div class="digit-cell">
+          <img src="assets/images/demo/feature_importance_class_9_demo.png" alt="Feature importance map for digit 9.">
+          <span class="digit-label">9</span>
+        </div>
+      </div>
+      <figcaption>
+        BASIL on MNIST digits 0 to 9. Each panel is the learned
+        per-cluster feature importance map after training. Pixel colour
+        intensity reflects the posterior mean of the per-cluster
+        relevance score &gamma;<sub>kd</sub>, so the panels recover the
+        digit silhouette purely from data and pairwise constraints,
+        without any pixel-level label.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 4.3 TL;DR -->
+<section class="section tldr-section">
+  <div class="container">
+    <p class="tldr">
+      BASIL learns clusters from data that comes with a few user-supplied
+      pairwise constraints, scales to half a million patients, and stays
+      accurate when up to 30% of those constraints are wrong.
+    </p>
+  </div>
+</section>
+
+<!-- 4.4 Abstract -->
+<section class="section" id="abstract">
+  <div class="container">
+    <h2 class="title is-3">Abstract</h2>
+    <p>
+      Constrained clustering incorporates prior knowledge in the form of
+      pairwise constraints to guide data partitioning. Existing Bayesian
+      approaches struggle to scale and offer weak interpretability.
+      We propose <strong>BASIL</strong>, a scalable Bayesian
+      semi-supervised clustering framework that uses stochastic
+      variational inference to jointly infer cluster assignments and
+      feature importance weights. To handle noisy supervision, BASIL
+      introduces an adaptive constraint-weighting mechanism that
+      downweights unreliable constraints. Experiments on synthetic and
+      real-world benchmarks show BASIL attains competitive accuracy
+      while reducing training time by over 96% on large datasets, learns
+      interpretable per-cluster feature importance maps, and remains
+      robust to up to 30% noisy constraints under sufficient supervision.
+      We further demonstrate applicability to large-scale health data,
+      including medical imaging and electronic health records.
+    </p>
+  </div>
+</section>
+
+<!-- 4.5 Why BASIL? -->
+<section class="section has-background-light" id="why">
+  <div class="container">
+    <h2 class="title is-3 has-text-centered">Why BASIL?</h2>
+    <div class="columns is-variable is-6 feature-cards">
+      <div class="column">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+          <h3 class="title is-5">Scalable</h3>
+          <p>Over 96% training-time reduction on large datasets thanks to stochastic variational inference. Tested up to 500k patients.</p>
+        </div>
+      </div>
+      <div class="column">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+          <h3 class="title is-5">Robust</h3>
+          <p>An adaptive Gamma prior on constraint weights downweights inconsistent supervision. Holds up under 30% noisy constraints.</p>
+        </div>
+      </div>
+      <div class="column">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-magnifying-glass"></i></div>
+          <h3 class="title is-5">Interpretable</h3>
+          <p>Per-cluster feature selection produces a relevance map per cluster, so clinicians can read off what each cluster is about.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.6 Method -->
+<section class="section" id="method">
+  <div class="container">
+    <h2 class="title is-3">Method</h2>
+    <figure class="method-figure">
+      <img src="assets/images/method/graphical_model.svg" alt="Plate diagram of BASIL. Latent variables include cluster assignments z_n, cluster parameters theta_k, per-cluster feature relevance gamma_k, mixture weights pi_k, and must-link and cannot-link constraint weights W and W-bar. Observed nodes are the data x_n and the constraint matrix Y. Plate K encloses theta_k, gamma_k, pi_k. Plate N encloses z_n and x_n.">
+      <figcaption>
+        Plate diagram of BASIL with feature selection and adaptive
+        constraint weight learning. Shaded nodes ($\mathbf{x}_n$, $Y$)
+        are observed; unshaded nodes ($z_n$, $\boldsymbol{\theta}_k$,
+        $\boldsymbol{\gamma}_k$, $\pi_k$, $W$, $\bar{W}$) are latent;
+        labels without circles are fixed hyperparameters.
+      </figcaption>
+    </figure>
+    <p>
+      BASIL formulates HMRF-structured cluster assignments, mixture
+      likelihoods, per-cluster feature relevance, and latent constraint
+      reliability inside a single hierarchical generative model. Each
+      cluster assignment $z_n$ depends on mixture weights $\pi_k$ and
+      on the pairwise-constraint matrix $Y$ through adaptive must-link
+      and cannot-link weights $W$ and $\bar{W}$. Per-feature relevance
+      $\gamma_{kd} \sim \mathrm{Beta}(\lambda_{\gamma 1},
+      \lambda_{\gamma 2})$ shrinks each cluster mean
+      $\boldsymbol{\theta}_k$ toward the population mean
+      $\boldsymbol{\theta}_0$. SVI delivers joint posterior inference
+      by maximising the ELBO,
+    </p>
+    <p class="math-display">
+      $$\mathcal{L}(q) = \mathbb{E}_q\!\left[\log p(X, Z, \boldsymbol{\theta}, \boldsymbol{\gamma}, W, \bar{W} \mid Y)\right] - \mathbb{E}_q\!\left[\log q(Z, \boldsymbol{\theta}, \boldsymbol{\gamma}, W, \bar{W})\right],$$
+    </p>
+    <p>
+      under the mean-field factorisation
+      $q(Z, \boldsymbol{\theta}, \boldsymbol{\gamma}, W, \bar{W})
+      = \prod_n q(z_n) \prod_k q(\boldsymbol{\theta}_k)
+      \prod_{k,d} q(\gamma_{kd}) \prod_{(n,m)} q(w_{nm}) q(\bar{w}_{nm})$,
+      which yields closed-form local updates compatible with mini-batching.
+    </p>
+  </div>
+</section>
+
+<!-- 4.7 Hyperparameter explorer -->
+<section class="section has-background-light" id="explorer">
+  <div class="container">
+    <h2 class="title is-3 has-text-centered">Hyperparameter explorer</h2>
+    <p class="explorer-intro">
+      The three knobs the paper identifies as the ones most worth tuning.
+      Drag the sliders to feel how each one shapes the model.
+    </p>
+
+    <div class="explorer-grid">
+
+      <!-- Panel A: warmup_prop -->
+      <article class="explorer-panel" id="panel-warmup">
+        <header>
+          <h3 class="panel-title">warmup_prop</h3>
+          <p class="panel-subtitle">Phased schedule from <code>1+D+FS</code> to <code>w+FS</code></p>
+        </header>
+        <div class="warmup-timeline" aria-hidden="true">
+          <div class="seg seg-warmup" id="warmup-left">
+            <span class="seg-label">1+D+FS</span>
+            <span class="seg-sub">fixed w, KL on, FS on</span>
+          </div>
+          <div class="seg seg-adaptive" id="warmup-right">
+            <span class="seg-label">w+FS</span>
+            <span class="seg-sub">adaptive w, KL off, FS on</span>
+          </div>
+        </div>
+        <div class="slider-row">
+          <label for="warmup-slider">warmup_prop</label>
+          <input type="range" id="warmup-slider"
+                 min="0" max="1" step="0.01" value="0.3"
+                 aria-label="warmup proportion"
+                 aria-valuetext="0.30, mixed phased schedule">
+          <output id="warmup-value" for="warmup-slider">0.30</output>
+        </div>
+        <p class="panel-caption" id="warmup-caption"></p>
+        <p class="panel-note">
+          <code>warmup_prop</code> only takes effect when
+          <code>w_learn</code>, <code>KL</code>, and <code>feat_select</code>
+          are all <code>True</code>.
+        </p>
+      </article>
+
+      <!-- Panel B: wprior -->
+      <article class="explorer-panel" id="panel-wprior">
+        <header>
+          <h3 class="panel-title">wprior</h3>
+          <p class="panel-subtitle">Gamma rate β on constraint weight <em>w</em></p>
+        </header>
+        <p class="prior-line">
+          Prior: <code>w &sim; Gamma(1, wprior)</code>
+          &nbsp;&middot;&nbsp; default <code>wprior = 1.0</code>
+        </p>
+        <div class="chart" id="wprior-chart" role="img"
+             aria-label="Gamma prior probability density function on the constraint weight, currently with rate beta equal to 1.0"></div>
+        <div class="slider-row">
+          <label for="wprior-slider">wprior</label>
+          <input type="range" id="wprior-slider"
+                 min="0.1" max="5" step="0.05" value="1.0"
+                 aria-label="wprior, Gamma rate beta on constraint weight">
+          <output id="wprior-value" for="wprior-slider">1.00</output>
+        </div>
+        <div class="readouts">
+          <div><span class="readout-label">Prior mean of <em>w</em></span>
+               <span class="readout-value" id="wprior-mean">1.000</span></div>
+          <div><span class="readout-label">Fixed <em>W</em> (<code>w_learn=False</code>)</span>
+               <span class="readout-value" id="wprior-fixed">1.000</span></div>
+        </div>
+        <div class="chips">
+          <button class="chip" data-target="wprior-slider" data-value="1.0">1.0 default</button>
+          <button class="chip" data-target="wprior-slider" data-value="1.5">1.5 &lt;1% noise</button>
+          <button class="chip" data-target="wprior-slider" data-value="2.5">2.5 ≥20% noise</button>
+        </div>
+        <p class="panel-fallback">
+          Increasing <code>wprior</code> shifts the Gamma prior toward
+          zero, lowering both the adaptive prior mean and the fixed
+          weight to <code>1/wprior</code>.
+        </p>
+      </article>
+
+      <!-- Panel C: fsprior -->
+      <article class="explorer-panel" id="panel-fsprior">
+        <header>
+          <h3 class="panel-title">fsprior</h3>
+          <p class="panel-subtitle">Beta rate on per-cluster feature importance <em>γ<sub>kd</sub></em></p>
+        </header>
+        <p class="prior-line">
+          Prior: <code>&gamma;<sub>kd</sub> &sim; Beta(0.5, fsprior)</code>
+          &nbsp;&middot;&nbsp; default <code>fsprior = 0.1</code>
+        </p>
+        <div class="chart" id="fsprior-chart" role="img"
+             aria-label="Beta prior probability density function on the per-cluster feature importance, currently with fsprior equal to 0.1"></div>
+        <div class="slider-row">
+          <label for="fsprior-slider">fsprior</label>
+          <input type="range" id="fsprior-slider"
+                 min="-1.301" max="1.301" step="0.001" value="-1.0"
+                 aria-label="log10 fsprior, Beta rate on feature importance">
+          <output id="fsprior-value" for="fsprior-slider">0.100</output>
+        </div>
+        <div class="readouts">
+          <div><span class="readout-label">Prior mean of <em>γ<sub>kd</sub></em></span>
+               <span class="readout-value" id="fsprior-mean">0.833</span></div>
+          <div><span class="readout-label">Selection strength</span>
+               <span class="readout-value" id="fsprior-interpretation">weak</span></div>
+        </div>
+        <div class="chips">
+          <button class="chip" data-target="fsprior-slider" data-value="-1.0">0.1 weak</button>
+          <button class="chip" data-target="fsprior-slider" data-value="0">1 moderate</button>
+          <button class="chip" data-target="fsprior-slider" data-value="1.301">20 strong</button>
+        </div>
+        <p class="panel-fallback">
+          Increasing <code>fsprior</code> shifts the Beta prior toward
+          zero importance, so only features the data strongly supports
+          remain salient.
+        </p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- 4.8 Results -->
+<section class="section" id="results">
+  <div class="container">
+    <h2 class="title is-3">Results</h2>
+    <div class="tabs is-boxed is-medium">
+      <ul>
+        <li class="is-active" data-tab="tab-synth"><a>Synthetic</a></li>
+        <li data-tab="tab-mnist"><a>MNIST</a></li>
+        <li data-tab="tab-digits"><a>Digits (noisy)</a></li>
+        <li data-tab="tab-chest"><a>ChestMNIST</a></li>
+        <li data-tab="tab-cprd"><a>CPRD</a></li>
+      </ul>
+    </div>
+    <div class="tab-panel is-active" id="tab-synth">
+      <p class="result-metric">NMI <strong>0.77</strong> in <strong>19.4 min</strong> on N=50k synthetic data at 50% supervision (vs 18.9 hr for the closest full-batch baseline, ~58x wall-clock reduction).</p>
+      <figure><img src="assets/images/results/SSCsimGau5000_r0.2_plot.png" alt="Synthetic Gaussian-mixture clustering result showing recovered cluster boundaries against ground truth."></figure>
+    </div>
+    <div class="tab-panel" id="tab-mnist" hidden>
+      <p class="result-metric">Outperforms PCK and MPCK on MNIST under 20% and 50% supervision, especially when the KL+FS configuration is used.</p>
+      <figure><img src="assets/images/results/wprior_comparison_fixed_w_vs_wdfs_mnist50.png" alt="Comparison of fixed-weight vs adaptive-weight BASIL configurations on MNIST at 50% supervision."></figure>
+    </div>
+    <div class="tab-panel" id="tab-digits" hidden>
+      <p class="result-metric">At 20% noisy constraints on Digits, the posterior mean separates clean from corrupted pairs with <strong>AUROC = 0.97</strong>.</p>
+      <figure><img src="assets/images/results/digits_barplot_20pct_supervision.png" alt="Bar plot comparing BASIL and baselines on the Digits dataset at 20% supervision and varying noise levels."></figure>
+    </div>
+    <div class="tab-panel" id="tab-chest" hidden>
+      <p class="result-metric">Cardiomegaly versus no cardiomegaly on 112,120 chest X-rays (binarised 28×28). Test ACC <strong>0.68</strong> at 50% supervision. The learned importance maps highlight the cardiac silhouette, with the cardiomegaly class showing a wider high-importance region matching how radiologists assess the cardiothoracic ratio.</p>
+      <figure>
+        <div class="chest-pair">
+          <div class="chest-cell">
+            <img src="assets/images/results/Chestmnist_feature_importance_class_0.png" alt="ChestMNIST feature importance map for the no-cardiomegaly class, with the cardiac silhouette highlighted in dark red.">
+            <span class="chest-label">(a) no cardiomegaly</span>
+          </div>
+          <div class="chest-cell">
+            <img src="assets/images/results/Chestmnist_feature_importance_class_1.png" alt="ChestMNIST feature importance map for the cardiomegaly class, with a wider high-importance region corresponding to an enlarged heart.">
+            <span class="chest-label">(b) cardiomegaly</span>
+          </div>
+        </div>
+      </figure>
+    </div>
+    <div class="tab-panel" id="tab-cprd" hidden>
+      <p class="result-metric">28 clinically meaningful patient clusters across half a million CPRD records, ages 70-74, identified under the <code>w+FS</code> recipe with balanced constraint sampling.</p>
+      <figure><img src="assets/images/results/CPRD_bubbles.png" alt="Bubble plot of 28 patient clusters from CPRD with size proportional to cluster prevalence and colour by outcome severity."></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 4.9 Citation -->
+<section class="section" id="citation">
+  <div class="container">
+    <h2 class="title is-3">Citation</h2>
+    <div class="citation-block">
+      <pre id="bibtex-block">@inproceedings{wang2026basil,
+  title     = {BASIL: Scalable Bayesian Semi-supervised Clustering with Feature Selection and Adaptive Constraint Weighting},
+  author    = {Wang, Luwei and Panas, Dagmara and Wang, Ke and Guthrie, Bruce and Seth, Sohan},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning},
+  year      = {2026},
+  series    = {Proceedings of Machine Learning Research},
+  publisher = {PMLR}
+}</pre>
+      <button class="button is-small copy-button" id="copy-bibtex" aria-label="Copy BibTeX to clipboard">
+        <span class="icon"><i class="fas fa-copy"></i></span><span>Copy</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- 4.11 Footer -->
+<footer class="footer">
+  <div class="container has-text-centered">
+    <p class="ack">
+      <strong>Acknowledgements.</strong>
+      Wang and Wang were supported by the School of Informatics PhD studentship.
+      Panas, Guthrie, and Seth were supported by the AIM-CISC programme.
+      Data access was granted under ISAC protocol 21_000542.
+    </p>
+    <p class="credit">
+      Page template adapted from
+      <a href="https://nerfies.github.io/">Nerfies</a> (Park et al. 2021).
+      Source on
+      <a href="https://github.com/Demi-wlw/BASIL-Scalable-Bayesian-Semi-supervised-Clustering">GitHub</a>.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
