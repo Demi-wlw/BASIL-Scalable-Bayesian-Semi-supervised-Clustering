@@ -1,7 +1,7 @@
 # BASIL: Bayesian Semi-supervised Clustering with Feature Selection and Adaptive Constraint Weighting
 
 Reference implementation for the ICML 2026 paper
-*Scalable Bayesian Semi-supervised Clustering with Feature Selection and Adaptive Constraint Weighting*.
+[*Scalable Bayesian Semi-supervised Clustering with Feature Selection and Adaptive Constraint Weighting*](https://demi-wlw.github.io/BASIL-Scalable-Bayesian-Semi-supervised-Clustering/).
 
 BASIL is a unified Bayesian generative model that jointly captures
 HMRF-structured cluster assignments, per-cluster feature relevance, and latent
